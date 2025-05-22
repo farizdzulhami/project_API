@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cari Sekolah Terkenal di Indonesia Berdasarkan Kota</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+  body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem;
+  }
+
+  header {
+    text-align: center;
+    max-width: 720px;
+    margin-bottom: 2.5rem;
+  }
+
+  header h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin: 0;
+    text-shadow: 2px 2px 6px rgba(0,0,0,0.4);
+  }
+
+  header p {
+    font-weight: 400;
+    font-size: 1.25rem;
+    margin-top: 0.5rem;
+    opacity: 0.85;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+  }
+
+  #filtersContainer {
+    margin-bottom: 2rem;
+    width: 100%;
+    max-width: 720px;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  #searchInput,
+  #citySelect {
+    padding: 16px 20px;
+    border-radius: 50px;
+    border: none;
+    font-size: 1.1rem;
+    outline: none;
+    font-weight: 600;
+    box-shadow: 0 0 10px rgba(0,0,0,0.15);
+    min-width: 200px;
+    max-width: 320px;
+  }
+
+  #searchInput {
+    background-color: #ffedd5;
+    color: #92400e;
+    transition: box-shadow 0.3s ease, background-color 0.3s ease;
+  }
+
+  #searchInput::placeholder {
+    color: #b45309;
+  }
+
+  #searchInput:focus {
+    box-shadow: 0 0 20px #b45309;
+    background-color: #fbbf24;
+    color: #5c3d00;
+  }
+
+  #citySelect {
+    background-color: #ffedd5;
+    color: #92400e;
+    cursor: pointer;
+    transition: box-shadow 0.3s ease, background-color 0.3s ease;
+  }
+  #citySelect:hover,
+  #citySelect:focus {
+    box-shadow: 0 0 20px #b45309;
+    background-color: #fbbf24;
+    color: #5c3d00;
+  }
+
+  #schoolsList {
+    max-width: 720px;
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.75rem;
+  }
+
+  .schoolCard {
+    background: rgba(255 255 255 / 0.15);
+    border-radius: 20px;
+    padding: 1.5rem 2rem;
+    box-shadow: 0 8px 25px rgba(0 0 0 / 0.15);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    cursor: default;
+  }
+
+  .schoolCard:hover {
+    background: rgba(255 255 255 / 0.3);
+    transform: translateY(-6px);
+  }
+
+  .schoolName {
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem;
+    color: #fffbf7;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
+  }
+
+  .schoolType {
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: #fbbf24;
+    margin-bottom: 0.5rem;
+  }
+
+  .schoolCity {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #ffe7a7;
+    margin-bottom: 1rem;
+  }
+
+  .schoolDescription {
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #fff;
+    opacity: 0.9;
+    min-height: 70px;
+  }
+
+  .noResults {
+    grid-column: 1/-1;
+    text-align: center;
+    font-size: 1.2rem;
+    color: #fee2b3;
+    padding: 2rem 1rem;
+  }
+
+  footer {
+    margin-top: 3.5rem;
+    font-size: 0.9rem;
+    opacity: 0.8;
+    color: #ffedd5;
+  }
+
+  @media (max-width: 500px) {
+    header h1 {
+      font-size: 2.2rem;
+    }
+
+    #filtersContainer {
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #searchInput,
+    #citySelect {
+      width: 100%;
+      max-width: none;
+      font-size: 1rem;
+    }
+
+    #schoolsList {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1> Sekolah Terkenal di Indonesia </h1>
+  <p>Temukan sekolah populer berdasarkan nama, jenis, dan kota.</p>
+</header>
+
+<div id="filtersContainer">
+  <input
+    type="search"
+    id="searchInput"
+    placeholder="Nama Sekolah"
+    aria-label="Cari sekolah"
+    autocomplete="off"
+  />
+  <select id="citySelect" aria-label="Filter berdasarkan kota">
+    <!-- Options dynamically filled by JS -->
+  </select>
+</div>
+
+<main id="schoolsList" aria-live="polite" aria-relevant="additions"></main>
+
+<footer>© 2024 Direktori Sekolah Indonesia</footer>
+
+<script>
+  const schools = [
+    {
+      name: 'SMA Negeri 8 Jakarta',
+      type: 'Sekolah Negeri',
+      city: 'Jakarta',
+      description: 'Sekolah negeri bergengsi di Jakarta terkenal dengan prestasi akademik dan ujian masuk yang ketat.'
+    },
+    {
+      name: 'Sekolah Pelita Harapan (SPH)',
+      type: 'Sekolah Internasional',
+      city: 'Jakarta',
+      description: 'Sekolah internasional dengan kurikulum Amerika yang menekankan pengembangan karakter dan kepemimpinan.'
+    },
+    {
+      name: 'British School Jakarta',
+      type: 'Sekolah Internasional',
+      city: 'Jakarta',
+      description: 'Mengikuti kurikulum Inggris dengan standar akademik tinggi dan kegiatan ekstrakurikuler beragam.'
+    },
+    {
+      name: 'Jakarta Intercultural School (JIS)',
+      type: 'Sekolah Internasional',
+      city: 'Jakarta',
+      description: 'Sekolah internasional tertua dengan kurikulum Amerika dan program IB untuk siswa multinasional.'
+    },
+    {
+      name: 'Sekolah Cikal',
+      type: 'Sekolah Swasta',
+      city: 'Jakarta',
+      description: 'Menekankan pendidikan progresif yang mendorong kemampuan berpikir kritis dan kreativitas.'
+    },
+    {
+      name: 'Bina Nusantara School (BNS)',
+      type: 'Sekolah Swasta',
+      city: 'Jakarta',
+      description: 'Mengintegrasikan teknologi dan kewirausahaan dengan reputasi akademik yang kuat.'
+    },
+    {
+      name: 'Sekolah Global Indo-Asia (SGIA)',
+      type: 'Sekolah Internasional',
+      city: 'Jakarta',
+      description: 'Menawarkan kurikulum IB dengan fokus pada kewarganegaraan global dan pencapaian akademik.'
+    },
+    {
+      name: 'SMA Negeri 3 Jakarta',
+      type: 'Sekolah Negeri',
+      city: 'Jakarta',
+      description: 'Dikenal dengan program akademik yang ketat dan tingkat penerimaan universitas yang tinggi.'
+    },
+    {
+      name: 'International School of Jakarta (ISJ)',
+      type: 'Sekolah Internasional',
+      city: 'Jakarta',
+      description: 'Pendidikan gaya Amerika yang mendorong berpikir kritis dan kreatif.'
+    },
+    {
+      name: 'SMA Kristen 1 Jakarta',
+      type: 'Sekolah Swasta Kristen',
+      city: 'Jakarta',
+      description: 'Menggabungkan akademik yang kuat dengan pendidikan moral dan etika.'
+    },
+    {
+      name: 'SMA Negeri 1 Bandung',
+      type: 'Sekolah Negeri',
+      city: 'Bandung',
+      description: 'Sekolah negeri unggulan di Bandung dengan tradisi akademik baik dan kegiatan ekstrakurikuler aktif.'
+    },
+    {
+      name: 'Sekolah Victory Plus Kota Bandung',
+      type: 'Sekolah Internasional',
+      city: 'Bandung',
+      description: 'Sekolah internasional berkurikulum internasional dengan fasilitas modern dan pengajar profesional.'
+    },
+    {
+      name: 'SMA Cendekia Baznas Jakarta',
+      type: 'Sekolah Negeri',
+      city: 'Jakarta',
+      description: 'Sekolah berprestasi dengan program religius dan akademik yang kuat.'
+    }
+  ];
+
+  const schoolsList = document.getElementById('schoolsList');
+  const searchInput = document.getElementById('searchInput');
+  const citySelect = document.getElementById('citySelect');
+
+  // Escape HTML to prevent injection
+  function escapeHtml(text) {
+    const map = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;',
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
+  }
+
+  // Render schools cards
+  function renderSchools(list) {
+    if (list.length === 0) {
+      schoolsList.innerHTML = '<p class="noResults">Maaf, tidak ada sekolah yang cocok dengan pencarian Anda.</p>';
+      return;
+    }
+
+    schoolsList.innerHTML = list.map(school => `
+      <article class="schoolCard" role="region" aria-label="${escapeHtml(school.name)}">
+        <h2 class="schoolName">${escapeHtml(school.name)}</h2>
+        <p class="schoolType">${escapeHtml(school.type)}</p>
+        <p class="schoolCity">Kota: ${escapeHtml(school.city)}</p>
+        <p class="schoolDescription">${escapeHtml(school.description)}</p>
+      </article>
+    `).join('');
+  }
+
+  // Populate city select options
+  function populateCitySelect() {
+    const cities = Array.from(new Set(schools.map(s => s.city))).sort();
+    citySelect.innerHTML = '<option value="all">Semua Kota</option>' + 
+      cities.map(city => `<option value="${escapeHtml(city)}">${escapeHtml(city)}</option>`).join('');
+  }
+
+  // Filter schools based on input and city
+  function filterSchools() {
+    const query = searchInput.value.trim().toLowerCase();
+    const city = citySelect.value;
+
+    const filtered = schools.filter(school => {
+      const matchesSearch = school.name.toLowerCase().includes(query) 
+        || school.type.toLowerCase().includes(query)
+        || school.description.toLowerCase().includes(query);
+
+      const matchesCity = city === 'all' || school.city === city;
+
+      return matchesSearch && matchesCity;
+    });
+
+    renderSchools(filtered);
+  }
+
+  // Event listeners
+  searchInput.addEventListener('input', filterSchools);
+  citySelect.addEventListener('change', filterSchools);
+
+  // Initialize
+  populateCitySelect();
+  renderSchools(schools);
+</script>
+</body>
+</html>
+
+
